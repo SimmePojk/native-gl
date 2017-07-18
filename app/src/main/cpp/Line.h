@@ -5,7 +5,7 @@
 #include <EGL/egl.h>
 
 #define NUM_POINTS 10
-#define INC 1.0f/NUM_POINTS
+#define INC 0.1f
 
 typedef unsigned int uint;
 
@@ -31,17 +31,15 @@ Point operator-(Point p1, Point p2){
 }
 
 class LineBuffer{
+public:
     void expand();
 
-public:
-    uint width;
-    uint height;
     Point *vertices;
     uint size;
     uint cap;
 
     LineBuffer();
-    void push(Point *points, Point startNorm);
+    void push(Point point, Point norm);
     ~LineBuffer();
 };
 
@@ -49,10 +47,10 @@ class Line{
     LineBuffer buffer;
 
     Point *points;
-    Point *tempPoints;
-    Point startNorm;
 
     uint drawSize;
+    uint width;
+    uint height;
 
     void pushSegment();
 
