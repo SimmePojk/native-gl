@@ -107,6 +107,7 @@ void Line::pushSegment(){
     norm.y /= height;
     Point end_a = points[2]+norm, end_b = points[2]-norm;
     Point c2_a = end_a-delta, c2_b = end_b-delta;
+    int i=0;
     for(float t=0.0f, _t, a, b, c, d; t<1.0f; t+=INC){
         _t = 1-t;
         a = _t*_t*_t;
@@ -117,6 +118,7 @@ void Line::pushSegment(){
         buffer.vertices[buffer.size++] = point;
         point = a*start_b+b*c1_b+c*c2_b+d*end_b;
         buffer.vertices[buffer.size++] = point;
+        i+=2;
     }
     if(buffer.size == buffer.cap) buffer.expand();
     drawSize += NUM_POINTS<<1;
@@ -145,10 +147,14 @@ void Line::push(Point p){
 }
 
 void Line::draw(){
-    uint num = NUM_POINTS<<3;
+    uint num = (NUM_POINTS+1)<<2;
     if(num > drawSize) num = drawSize;
     uint offset = drawSize-num;
-    glBufferSubData(GL_ARRAY_BUFFER, 0, num*sizeof(Point), buffer.vertices+offset);
+    //glBufferData(GL_ARRAY_BUFFER, drawSize*sizeof(Point), vertices, GL_STATIC_DRAW);
+    //glBufferSubData(GL_ARRAY_BUFFER, 0, num*sizeof(Point), buffer.vertices+offset);
+    Point *data = (Point*)glMapBufferRange(GL_ARRAY_BUFFER, 0, num*sizeof(Point), GL_MAP_WRITE_BIT);
+    for(uint i=0; i<num; ++i) data[i] = buffer.vertices[i+offset];
+    glUnmapBuffer(GL_ARRAY_BUFFER);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, num);
 }
 

@@ -2,6 +2,7 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <android/log.h>
+#include <iostream>
 
 #include "native-lib.h"
 #include "renderer.h"
@@ -9,7 +10,7 @@
 #define LOGGING
 
 #ifdef LOGGING
-#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "Native", __VA_ARGS__)
+#define LOG(...) __android_log_print(ANDROID_LOG_WARN, "Native", __VA_ARGS__)
 #else
 #define LOG(...)
 #endif
@@ -19,6 +20,7 @@ static ANativeWindow *window = 0;
 static Renderer *renderer = 0;
 
 JNIEXPORT void JNICALL Java_com_example_snan_gl_1native_MainActivity_nativeOnStart(JNIEnv *env, jobject obj) {
+    LOG("Native OnStart");
     renderer = new Renderer();
 }
 

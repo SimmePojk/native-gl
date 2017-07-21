@@ -6,42 +6,50 @@
 
 #include "renderer.h"
 
-//#define LOGGING
+#define LOGGING
 
 #ifdef LOGGING
-    #define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "Native", __VA_ARGS__)
+    #define LOG(...) __android_log_print(ANDROID_LOG_WARN, "Native", __VA_ARGS__)
 #else
     #define LOG(...)
 #endif
 
-static const GLchar *vertexSource = "#version 300 es\n"
-        "layout(location = 0) in vec2 position;"
-        "void main(){"
-        "   gl_Position = vec4(position, 0.0, 1.0);"
-        "}\0";
+#define GLSL_STR(src) "#version 300 es\n" #src
 
-static const GLchar *fragmentSource = "#version 300 es\n"
-        "out vec4 FragColor;"
-        "void main(){"
-        "   FragColor = vec4(0.188, 0.43, 0.176, 1.0);"
-        "}\0";
+static const GLchar *vertexSource = GLSL_STR(
+    layout(location = 0) in vec2 position;
+    void main(){
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+);
 
-static const GLchar *texVertexSource = "#version 300 es\n"
-        "layout(location = 0) in vec2 position;"
-        "layout(location = 1) in vec2 texCoord;"
-        "out vec2 TexCoord;"
-        "void main(){"
-        "   TexCoord = texCoord;"
-        "   gl_Position = vec4(position, 0.0, 1.0);"
-        "}\0";
+static const GLchar *fragmentSource = GLSL_STR(
+    precision mediump float;
+    out vec4 FragColor;
+    void main(){
+        FragColor = vec4(0.188, 0.43, 0.176, 1.0);
+    }
+);
 
-static const GLchar *texFragmentSource = "#version 300 es\n"
-        "in vec2 TexCoord;"
-        "out vec4 FragColor;"
-        "uniform sampler2D tex;"
-        "void main(){"
-        "   FragColor = texture(tex, TexCoord);"
-        "}\0";
+static const GLchar *texVertexSource = GLSL_STR(
+    layout(location = 0) in vec2 position;
+    layout(location = 1) in vec2 texCoord;
+    out vec2 TexCoord;
+    void main(){
+        TexCoord = texCoord;
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+);
+
+static const GLchar *texFragmentSource = GLSL_STR(
+    precision mediump float;
+    in vec2 TexCoord;
+    out vec4 FragColor;
+    uniform sampler2D tex;
+    void main(){
+        FragColor = texture(tex, TexCoord);
+    }
+);
 
 static const Point texData[] = {
         // Vertex coords   Texture coords
@@ -61,6 +69,7 @@ GLuint buildShader(const GLuint type, const GLchar *source){
         char log[512];
         glGetShaderInfoLog(shader, 512, 0, log);
         LOG("Shader Error: %s", log);
+        LOG("Source: %s", source);
     }
     return shader;
 }
@@ -203,7 +212,7 @@ bool Renderer::initialize(){
     glBindVertexArray(vao);
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, (NUM_POINTS<<3)*sizeof(Point), 0, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, ((NUM_POINTS+1)<<2)*sizeof(Point), 0, GL_STREAM_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Point), 0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
